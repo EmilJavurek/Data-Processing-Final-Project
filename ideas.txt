@@ -1,0 +1,58 @@
+Notes for figuring out what to do as a project"
+
+
+English books
+
+I could collect:
+
+name
+price (for each avilable type)
+type (paperback hardcover ebook)
+author
+rating
+number of ratings
+ISBN (or some other unique identificator would be nice)
+physical Dimensions (I suppose wont be there for ebooks)
+number of pages
+Best Seller rank
+Publisher
+
+description
+editorial review
+from the back cover
+
+
+I can scrape all of the above
+
+
+generate keywords?
+keywords price association?
+
+More easily predict rating?
+Predict price from text descriptions?
+########################################
+
+Right now I am doing only "to-read" shelf, I could do way more "shelves"
+https://www.goodreads.com/shelf?page=1
+
+
+
+
+
+
+
+
+####################################
+sentiment analysis
+correlation of word review and stars it gives
+natural language processing
+search engine by keywords
+topic modelling
+
+https://towardsdatascience.com/topic-modelling-in-python-with-spacy-and-gensim-dc8f7748bdbf
+https://towardsai.net/p/nlp/natural-language-processing-nlp-with-python-tutorial-for-beginners-1f54e610a1a0
+https://www.nltk.org/
+https://www.analyticsvidhya.com/blog/2021/06/nlp-sentiment-analysis/
+https://www.mygreatlearning.com/blog/text-summarization-in-python/#:~:text=Text%20Summarization%20Python%20helps%20in,insights%20into%20their%20original%20text
+https://towardsdatascience.com/understand-text-summarization-and-create-your-own-summarizer-in-python-b26a9f09fc70
+https://www.toptal.com/python/topic-modeling-python
