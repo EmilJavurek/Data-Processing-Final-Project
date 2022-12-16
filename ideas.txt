@@ -35,10 +35,14 @@ Predict price from text descriptions?
 Right now I am doing only "to-read" shelf, I could do way more "shelves"
 https://www.goodreads.com/shelf?page=1
 
+https://www.goodreads.com/shelf
 
 
 
-
+documentations im using:
+https://selenium-python.readthedocs.io/api.html
+https://www.crummy.com/software/BeautifulSoup/bs4/doc/
+https://docs.scrapy.org/en/latest/topics/selectors.html
 
 
 

@@ -11,15 +11,15 @@ import pandas as pd
 import argparse
 from scrapy import Selector
 import re
+import time
+
+from goodreads_login import login
 
 def main(input_file_name, output_file_name):
     #SETUP
-    driver = webdriver.Chrome(ChromeDriverManager().install())
-
-
+    driver = login()
     #read input file with links
     df = pd.read_csv(input_file_name)
-
     #initialize output
     books_df = pd.DataFrame()
 
@@ -28,29 +28,41 @@ def main(input_file_name, output_file_name):
         name = row["name"]
         link = row["link"]
 
-        #check
+        #scrape book
         print(f"Now running: {link}")
+        tic = time.perf_counter()
+        one_book = scrape(link,driver,index)
+        toc = time.perf_counter()
+        print(f"Scraping {name} took {toc-tic:0.4f} seconds. \n")
 
-        one_book = scrape(link,driver)
         books_df = pd.concat([books_df, one_book])
 
     #save to file
     books_df.to_csv(output_file_name, index = False)
 
     #end driver session
-    # driver.quit()
+    driver.close()
 
 
-def scrape(link,driver):
+def scrape(link,driver,index):
     #load page and get html
     driver.get(link)
+
+    #first book might encounter "welcome to our new book page!"
+    if index == 0:
+        #get rid of welcome link
+        try:
+            driver.implicitly_wait(5)
+            driver.find_element_by_xpath("/html/body/div[3]/div/div[3]/div/button").click()
+        except Exception as e:
+            pass
+
     html = driver.page_source
     sel = Selector(text = html)
 
     #name
     name_xpath = '//*[@id="bookTitle"]/text()'
     name = sel.xpath(name_xpath).extract()[0].strip()
-    print(name)
 
     #author
     author_xpath = '//*[@id="bookAuthors"]/span[2]/div/a/span/text()'
@@ -98,36 +110,6 @@ def scrape(link,driver):
 
     output = pd.DataFrame(data, index = [0])
     return output
-
-
-
-
-    return None
-
-def formatting(link,scraped):
-    """
-    INPUT:
-    not clean name,
-    link to books page
-    scraped data:
-
-    OUTPUT:
-    one row dataframe:
-    """
-    pass
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

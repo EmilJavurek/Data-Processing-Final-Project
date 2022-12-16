@@ -27,17 +27,20 @@ def login():
     driver.implicitly_wait(1)
     driver.find_element_by_xpath('//*[@id="choices"]/div/a[2]/button').click()
     #put in credentials
-    driver.implicitly_wait(1)
     driver.find_element_by_xpath('//*[@id="ap_email"]').send_keys(email)
     driver.find_element_by_xpath('//*[@id="ap_password"]').send_keys(password)
     driver.find_element_by_xpath('//*[@id="signInSubmit"]').click()
 
     #not a robot check == 15 SECONDS TO HUMANLY INPUT LOGIN
     try:
-        driver.implicitly_wait(1)
-        driver.find_element_by_xpath('//*[@id="ap_password"]').send_keys(password)
-        time.sleep(15)
-        driver.find_element_by_xpath('//*[@id="signInSubmit"]').click()
+        #if statements so that we dont always wait 15 seconds
+        if driver.find_element_by_xpath('//*[@id="ap_password"]') is None:
+            raise Error()
+        #if robot check human input of check
+        else:
+            driver.find_element_by_xpath('//*[@id="ap_password"]').send_keys(password)
+            time.sleep(15)
+            driver.find_element_by_xpath('//*[@id="signInSubmit"]').click()
     except Exception as e:
         pass
 

@@ -18,6 +18,7 @@ import re
 import pandas as pd
 import argparse
 from math import ceil
+import time
 
 from selenium import webdriver
 from webdriver_manager.chrome import ChromeDriverManager
@@ -40,35 +41,31 @@ def add_unique(links,names,books):
         if books.get(link):
             pass
         else:
-            print("new book!")
             books[link] = name
     return(books)
 
 def main(output_file_name):
     #setup
     driver = login()
-
-    #output dict
     books = {}
-
-    #loop through pages until last page=25
     page = 1
-
+    #loop
     while page < 26:
         print(f"Collecting books:{(page-1)*50}-{page*50}")
 
         #load website
         url = complete_url(page)
+        tic = time.perf_counter()
         driver.get(url)
-        driver.implicitly_wait(10)
+        toc = time.perf_counter()
+        print(f"Loading {url} took {toc-tic:0.4f} seconds.")
+
+        #get soup
         html = driver.page_source
         dom = BeautifulSoup(html, 'html.parser')
 
-
         #extract book info from one page and add to result
         links, names = extract_info(dom)
-        print(names)
-
         #add unique results to total dictionary:
         books = add_unique(links,names,books)
         #update counter
@@ -76,12 +73,9 @@ def main(output_file_name):
 
 
 
-    #convert result to dataframe
+    #convert result to dataframe and save to output file
     books_df = pd.DataFrame(books.items(), columns = ["link", "name"])
-
-    #save result to output file
     books_df.to_csv(output_file_name, index = False)
-
     #close the driver
     driver.close()
 
