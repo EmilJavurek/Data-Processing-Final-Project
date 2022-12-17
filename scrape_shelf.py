@@ -4,6 +4,9 @@
 The goal of this script is to scrape all books from a goodreads "shelf"
 
 We choose the "to-read" shelf as it has the most books (2 billion +)
+but except for one line where we specifiy the link, the code is generalisable
+if I have the time, the project has the possibility to be expanded to more shelves
+and thus more books.
 
 In practice, goodread website is only willing to show the first 1249 books
 so we scrape all of them
@@ -49,7 +52,7 @@ def main(output_file_name):
     driver = login()
     books = {}
     page = 1
-    #loop
+    #loop - only first 25 pages because the others are fake/not avialable to normal users.
     while page < 26:
         print(f"Collecting books:{(page-1)*50}-{page*50}")
 

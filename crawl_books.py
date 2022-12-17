@@ -31,11 +31,21 @@ def main(input_file_name, output_file_name):
         #scrape book
         print(f"Now running: {link}")
         tic = time.perf_counter()
-        one_book = scrape(link,driver,index)
+        try:
+            one_book = scrape(link,driver,index)
+        except Exception as e:
+            #if fail, emergency save and retry
+            print(f"LOAD FAILED, EMERGENCY SAVE AND RETRY")
+            books_df.to_csv("safety_saves/emergency_save_till_" + str(index-1) + "_index.csv", index = False)
+            one_book = scrape(link,driver,index)
         toc = time.perf_counter()
         print(f"Scraping {name} took {toc-tic:0.4f} seconds. \n")
 
         books_df = pd.concat([books_df, one_book])
+
+        #safety saving each 100 books just in case:
+        if index % 100 == 0:
+            books_df.to_csv("safety_saves/first_"+str(index)+"_books.csv", index = False)
 
     #save to file
     books_df.to_csv(output_file_name, index = False)
@@ -46,17 +56,8 @@ def main(input_file_name, output_file_name):
 
 def scrape(link,driver,index):
     #load page and get html
+    driver.implicitly_wait(10)
     driver.get(link)
-
-    #first book might encounter "welcome to our new book page!"
-    if index == 0:
-        #get rid of welcome link
-        try:
-            driver.implicitly_wait(5)
-            driver.find_element_by_xpath("/html/body/div[3]/div/div[3]/div/button").click()
-        except Exception as e:
-            pass
-
     html = driver.page_source
     sel = Selector(text = html)
 
@@ -90,10 +91,6 @@ def scrape(link,driver,index):
     # genres
     genres = sel.xpath('//div[contains(@class, "bigBoxBody")]//a[contains(@href, "genres")]/text()').extract()
 
-    ################### TODO
-    # review
-    # review_rating
-    # review_text
 
     #format output
     data = {
@@ -105,7 +102,6 @@ def scrape(link,driver,index):
     "number_of_ratings": number_of_ratings,
     "number_of_reviews": number_of_reviews,
     "genres": str(genres)
-    #"reviews": reviews
     }
 
     output = pd.DataFrame(data, index = [0])
