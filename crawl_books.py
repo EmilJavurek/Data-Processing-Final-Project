@@ -12,7 +12,7 @@ import argparse
 from scrapy import Selector
 import re
 import time
-
+import os
 from goodreads_login import login
 
 def main(input_file_name, output_file_name):
@@ -29,23 +29,13 @@ def main(input_file_name, output_file_name):
         link = row["link"]
 
         #scrape book
-        print(f"Now running: {link}")
-        tic = time.perf_counter()
-        try:
-            one_book = scrape(link,driver,index)
-        except Exception as e:
-            #if fail, emergency save and retry
-            print(f"LOAD FAILED, EMERGENCY SAVE AND RETRY")
-            books_df.to_csv("safety_saves/emergency_save_till_" + str(index-1) + "_index.csv", index = False)
-            one_book = scrape(link,driver,index)
-        toc = time.perf_counter()
-        print(f"Scraping {name} took {toc-tic:0.4f} seconds. \n")
+        one_book = scrape_shell(books_df,name, link, driver, index, output_file_name)
 
+        #add to output
         books_df = pd.concat([books_df, one_book])
 
-        #safety saving each 100 books just in case:
-        if index % 100 == 0:
-            books_df.to_csv("safety_saves/first_"+str(index)+"_books.csv", index = False)
+        #safety saving just in case:
+        safety_save(books_df, index, output_file_name, 100)
 
     #save to file
     books_df.to_csv(output_file_name, index = False)
@@ -53,8 +43,63 @@ def main(input_file_name, output_file_name):
     #end driver session
     driver.close()
 
+def remove_file(file_path):
+    """
+    for removing files in "safety_saves" folder
+    """
+    try:
+        if os.path.exists(file_path):
+            os.remove(file_path)
+    except Exception as e:
+        pass
 
-def scrape(link,driver,index):
+def safety_save(books_df, index, output_file_name, frequency = 100):
+    """
+    After every "frequency" number of books we do a safety save
+    Each time we do a safety save we also remove the previous one
+    and also all previous emergency saves.
+    We do the removals to minimize safety files with overlap information
+    (it doesnt create any extra safety)
+    """
+    number = index + 1
+    if number % frequency == 0:
+        #save
+        books_df.to_csv("safety_saves/" + output_file_name[:-4] + "_first_" + str(number) + "_books.csv", index = False)
+        #remove previous safety save, we only want the latest one
+        previous_path = "safety_saves/" + output_file_name[:-4] + "_first_" + str(number-frequency) + "_books.csv"
+        remove_file(previous_path)
+        #remove previous emergency saves, we dont need them anymore:
+        for i in range(index):
+            path = "safety_saves/" + output_file_name[:-4] + "_emergency_till_" + str(i-1) + "_index.csv"
+            remove_file(path)
+
+def scrape_shell(books_df,name,link,driver,index,output_file_name):
+    """
+    Shell of actuall scrape function:
+    prints progress statements
+    covers scrape function in try block that includes emergency save
+    """
+    print(f"Now running book #{index + 1}: {link}")
+    tic = time.perf_counter()
+
+    try:
+        one_book = scrape(link,driver)
+    except Exception as e:
+        #if fail, emergency save and retry
+        print(f"LOAD FAILED, EMERGENCY SAVE AND RETRY")
+        books_df.to_csv("safety_saves/" + output_file_name[:-4] + "_emergency_till_" + str(index-1) + "_index.csv", index = False)
+        one_book = scrape(link,driver)
+
+    toc = time.perf_counter()
+    print(f"Scraping {name} took {toc-tic:0.4f} seconds. \n")
+    return one_book
+
+def scrape(link,driver):
+    """
+    Actuall data retrieval through scraping
+    Loads page, gets data using xpaths
+    returns one row dataframe
+    """
     #load page and get html
     driver.implicitly_wait(10)
     driver.get(link)
