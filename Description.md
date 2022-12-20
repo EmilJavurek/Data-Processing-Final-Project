@@ -11,4 +11,12 @@ First, I scraped the "to-read" shelf of books from goodreads.com. Supposedly, it
 
 Next, I crawled the "to-read" shelf to obtain the "name,author,description,genres" information for each book (crawl_books.py). Since I was crawling through ~1200 webpages I had to introduce a back-up system to avoid having no data if the script crashed halfway throughout. However, to avoid cluttering my computer with a bunch of backup files, I also introduced and automatic deletion of previous backups at each backup.
 
-Finally, I created the LDA model from the obtained book descriptions (Final_model.ipynb). During preprocessing I tokenized (using a pretrained open-source model) the book description, chose only the appropriate tokens and used only their lemmas. The actuall model had as input a Gensim Dictionary object of the tokens and its corpus. Then, I used the C_v algorithm to determine how many topics to model and settled on 4. I visualized the resulting model using principal component analysis, with a pyLDAvis package (pca_visualization.html). Lastly, using the probabilities of each book belonging to a given topic (=output of the model), I created "weights = summed probabilities" of each genre belonging to a given topic (summed probabilities of each book that belongs to that genre.)
+Finally, I created the LDA model from the obtained book descriptions (Final_model.ipynb). During preprocessing I tokenized (using a pretrained open-source model) the book description, chose only the appropriate tokens and used only their lemmas. The actuall model had as input a Gensim Dictionary object of the tokens and its corpus. Then, I used the C_v algorithm to determine how many topics to model and settled on 4. I visualized the resulting model using principal component analysis, with a pyLDAvis package (pca_visualization.html). Lastly, using the probabilities of each book belonging to a given topic (=output of the model), I created "weights = summed probabilities" of each genre belonging to a given topic (summed probabilities of each book that belongs to that genre.). I then list the top 10 most "relevant" genres for each topic. From this we can conclude that the 4 topics could be loosely interpreted as "nonfiction, classical, fantasy, novel".
+
+#### Follow up research?
+To expand on this project, one could:
+-look at how much the model improves with more books as input data.
+-see if we can get close to 1-to-1 correspondence between topics and genres
+-compare the results to a learning model that assigns the books directly to genres with the descriptions as input.
+
+
